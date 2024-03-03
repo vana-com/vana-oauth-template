@@ -1,11 +1,13 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function Auth() {
-  const searchParams = useSearchParams();
+export default function Auth({
+  searchParams,
+}: {
+  searchParams: { code: string };
+}) {
   const router = useRouter();
 
   /**
@@ -46,8 +48,7 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    const accessCode = searchParams.get("code") as string;
-    exchangeCodeForToken(accessCode);
+    exchangeCodeForToken(searchParams.code);
   }, [searchParams]);
 
   return (
