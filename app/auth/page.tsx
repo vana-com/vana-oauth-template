@@ -49,7 +49,7 @@ export default function Auth({
 
   useEffect(() => {
     exchangeCodeForToken(searchParams.code);
-  }, [searchParams]);
+  }, []);
 
   return (
     <div className="flex h-screen">
