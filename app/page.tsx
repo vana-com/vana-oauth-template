@@ -3,6 +3,7 @@
 import { generateCodeVerifier } from "@badgateway/oauth2-client";
 import { client } from "./auth";
 import { useEffect, useState } from "react";
+import { LoadingIndicator } from "./components/LoadingIndicator";
 
 export default function Home() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -47,35 +48,8 @@ export default function Home() {
       return accessToken;
     }
 
-    localStorage.clear();
+    logout();
     return null;
-  };
-
-  /**
-   * If the user is logged in, get their account details from the Vana API
-   */
-  const getVanaAccount = async () => {
-    if (accessToken) {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/account`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const { account } = await response.json();
-        localStorage.setItem("accountId", account.id);
-        setAccountUsername(account.username);
-      } else {
-        console.error(
-          "Failed to get Vana account",
-          response.status,
-          response.statusText
-        );
-      }
-    }
   };
 
   /**
@@ -85,6 +59,36 @@ export default function Home() {
     const cachedAccessToken = getAccessToken();
     if (cachedAccessToken) {
       setAccessToken(cachedAccessToken);
+
+      /**
+       * If the user is logged in, get their account details from the Vana API
+       */
+      const getVanaAccount = async () => {
+        if (accessToken) {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/account`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+          if (response.ok) {
+            const { account } = await response.json();
+            localStorage.setItem("accountId", account.id);
+            setAccountUsername(account.username);
+          } else if (response.status === 401) {
+            console.warn("Access token invalid, logging out");
+            logout();
+          } else {
+            console.error(
+              "Failed to get Vana account",
+              response.status,
+              response.statusText
+            );
+          }
+        }
+      };
       getVanaAccount();
     }
   }, [accessToken]);
@@ -105,6 +109,7 @@ export default function Home() {
         {/* Logged in, show user details + logout button */}
         {accessToken && (
           <div className="flex flex-col space-y-4">
+            {!accountUsername && <LoadingIndicator />}
             {accountUsername && (
               <p>
                 Logged in as <b>{accountUsername}</b>
