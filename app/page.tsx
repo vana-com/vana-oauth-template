@@ -22,7 +22,14 @@ export default function Home() {
       redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URL as string,
       state: oauthState,
       codeVerifier,
-      scope: ["openid", "offline"],
+      scope: [
+        "openid",
+        "offline",
+        "voice:read",
+        "personality:read",
+        "appearance:read",
+        "memory:read",
+      ],
     });
   };
 
